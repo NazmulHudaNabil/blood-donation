@@ -1,0 +1,18 @@
+[project]
+name = "blood-donation-backends"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "email-validator>=2.3.0",
+    "fastapi>=0.139.0",
+    "pydantic-settings>=2.14.2",
+    "python-multipart>=0.0.32",
+    "psycopg[binary]>=3.2.10",
+    "sqlalchemy>=2.0.51",
+    "uvicorn>=0.51.0",
+    "python-jose[cryptography]>=3.5.0",
+    "passlib[bcrypt]>=1.7.4",
+    "bcrypt==4.0.1",
+]
