@@ -1,6 +1,6 @@
 import logging
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger("app.config")
@@ -8,6 +8,14 @@ logger = logging.getLogger("app.config")
 
 class Settings(BaseSettings):
     DATABASE_URL: str
+
+    @field_validator("DATABASE_URL")
+    def assemble_db_connection(cls, v: str) -> str:
+        if v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql+psycopg://", 1)
+        elif v.startswith("postgresql://"):
+            return v.replace("postgresql://", "postgresql+psycopg://", 1)
+        return v
 
     SECRET_KEY: str
 
