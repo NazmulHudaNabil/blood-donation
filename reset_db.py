@@ -1,10 +1,15 @@
-from app.database import engine, Base
-import app.models
+"""Dev convenience: wipe the database and rebuild it from the Alembic
+migrations, so schema state always matches what migrations would produce
+(rather than bypassing them via Base.metadata, which could drift)."""
 
-print("Dropping all tables...")
-Base.metadata.drop_all(bind=engine)
+from alembic import command
+from alembic.config import Config
 
-print("Recreating all tables...")
-Base.metadata.create_all(bind=engine)
+print("Downgrading to base (dropping all tables)...")
+alembic_cfg = Config("alembic.ini")
+command.downgrade(alembic_cfg, "base")
 
-print("Database reset successfully! (Now only containing users and blood_requests)")
+print("Upgrading to head (recreating all tables)...")
+command.upgrade(alembic_cfg, "head")
+
+print("Database reset successfully via Alembic migrations!")

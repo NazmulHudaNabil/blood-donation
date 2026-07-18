@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required in production}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required in production}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required in production}
+    # Not published to the host — only the `api` service on the compose
+    # network can reach it. Uncomment if you need direct external DB access.
+    # ports:
+    #   - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    restart: always
+    env_file:
+      - .env
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?POSTGRES_USER is required in production}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required in production}@db:5432/${POSTGRES_DB:?POSTGRES_DB is required in production}
+    # No bind mounts — the built image is immutable; ship a new image to deploy a change.
+    command: sh -c "uv run alembic upgrade head && uv run fastapi run app/main.py --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:

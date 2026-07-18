@@ -1,5 +1,5 @@
 from datetime import date
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class DonorResponse(BaseModel):
@@ -9,12 +9,12 @@ class DonorResponse(BaseModel):
     division_id: int
     district_id: int
     upazila_id: int
+    area: str | None = None
     phone: str
     is_available: bool
     last_donation_date: date | None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AvailabilityUpdate(BaseModel):

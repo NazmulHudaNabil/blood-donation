@@ -1,10 +1,12 @@
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
+from fastapi import Request
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.user import User
+from app.rate_limit import limiter
 
 from app.schemas.user_schema import UserCreate
 from app.schemas.user_schema import UserResponse
@@ -28,7 +30,9 @@ router = APIRouter(
     "/register",
     response_model=UserResponse,
 )
+@limiter.limit("5/minute")
 def register(
+    request: Request,
     user: UserCreate,
     db: Session = Depends(get_db),
 ):
@@ -44,6 +48,18 @@ def register(
             detail="Email already exists",
         )
 
+    existing_phone = (
+        db.query(User)
+        .filter(User.phone == user.phone)
+        .first()
+    )
+
+    if existing_phone:
+        raise HTTPException(
+            status_code=400,
+            detail="Phone number already exists",
+        )
+
     new_user = User(
         name=user.name,
         email=user.email,
@@ -52,6 +68,7 @@ def register(
         division_id=user.division_id,
         district_id=user.district_id,
         upazila_id=user.upazila_id,
+        area=user.area,
         password=hash_password(user.password),
         last_donation_date=user.last_donation_date,
     )
@@ -66,7 +83,9 @@ def register(
     "/login",
     response_model=Token,
 )
+@limiter.limit("10/minute")
 def login(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):

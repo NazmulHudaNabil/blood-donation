@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.schemas.location_schema import DivisionResponse, DistrictResponse, UpazilaResponse
 from app.services.location_service import (
     get_divisions,
+    get_all_districts,
     get_districts_by_division,
     get_upazilas_by_district,
 )
@@ -18,6 +19,15 @@ router = APIRouter(
 )
 def list_divisions():
     return get_divisions()
+
+
+@router.get(
+    "/districts",
+    response_model=list[DistrictResponse],
+)
+def list_all_districts():
+    """Flat list of every district, regardless of division — handy for a single search dropdown."""
+    return get_all_districts()
 
 
 @router.get(

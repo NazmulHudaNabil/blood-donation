@@ -40,6 +40,7 @@ def update_my_profile(
     current_user.division_id = user.division_id
     current_user.district_id = user.district_id
     current_user.upazila_id = user.upazila_id
+    current_user.area = user.area
     current_user.is_available = user.is_available
 
     db.commit()
